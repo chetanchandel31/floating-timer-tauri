@@ -32,6 +32,52 @@ function format(ms: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+// The overlay badge is a Windows-only feature, so skip it elsewhere
+const isWindows = navigator.userAgent.includes("Windows");
+let badgePng: Uint8Array | null = null;
+let lastBadgeRunning: boolean | null = null;
+
+// Draw a green dot with a white ring on a canvas and encode it as PNG,
+// so there's no image file to ship.
+async function makeBadge(): Promise<Uint8Array> {
+  const size = 32;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+  ctx.fillStyle = "#3ddc84";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#ffffff"; // ring keeps it visible on any taskbar color
+  ctx.stroke();
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+      "image/png",
+    ),
+  );
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+// Only touches the taskbar when the running state actually changes
+async function updateBadge(running: boolean): Promise<void> {
+  if (!isWindows || running === lastBadgeRunning) return;
+  lastBadgeRunning = running;
+  try {
+    const win = getCurrentWindow();
+    if (running) {
+      badgePng ??= await makeBadge();
+      await win.setOverlayIcon(badgePng);
+    } else {
+      await win.setOverlayIcon(undefined); // removes the badge
+    }
+  } catch (e) {
+    console.error("overlay icon failed", e);
+  }
+}
+
 function render(): void {
   const running = startedAt !== null;
   timeEl.textContent = format(elapsedMs());
@@ -42,6 +88,7 @@ function render(): void {
       : "Start";
   toggleBtn.dataset.state = running ? "running" : "idle";
   dotEl.classList.toggle("running", running);
+  void updateBadge(running);
 }
 
 function start(): void {
