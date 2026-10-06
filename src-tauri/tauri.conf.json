@@ -15,8 +15,8 @@
       {
         "label": "main",
         "title": "floating-timer-tauri",
-        "width": 180,
-        "height": 90,
+        "width": 175,
+        "height": 110,
         "resizable": false,
         "decorations": false,
         "transparent": true,

@@ -6,6 +6,7 @@ const timeEl = document.querySelector<HTMLDivElement>("#time")!;
 const toggleBtn = document.querySelector<HTMLButtonElement>("#toggle")!;
 const resetBtn = document.querySelector<HTMLButtonElement>("#reset")!;
 const closeBtn = document.querySelector<HTMLButtonElement>("#close")!;
+const dotEl = document.querySelector<HTMLSpanElement>("#dot")!;
 
 // Time banked from earlier running periods (ms)
 let accumulatedMs = 0;
@@ -32,12 +33,15 @@ function format(ms: number): string {
 }
 
 function render(): void {
+  const running = startedAt !== null;
   timeEl.textContent = format(elapsedMs());
-  if (startedAt !== null) {
-    toggleBtn.textContent = "Pause";
-  } else {
-    toggleBtn.textContent = accumulatedMs > 0 ? "Resume" : "Start";
-  }
+  toggleBtn.textContent = running
+    ? "Pause"
+    : accumulatedMs > 0
+      ? "Resume"
+      : "Start";
+  toggleBtn.dataset.state = running ? "running" : "idle";
+  dotEl.classList.toggle("running", running);
 }
 
 function start(): void {

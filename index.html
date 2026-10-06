@@ -9,12 +9,16 @@
   </head>
   <body>
     <div class="widget" data-tauri-drag-region>
-      <button id="close" class="close" tabindex="-1" aria-label="Close">
-        ×
-      </button>
+      <div class="top-bar">
+        <span id="dot" class="dot"></span>
+        <button id="close" class="close" tabindex="-1" aria-label="Close">
+          ×
+        </button>
+      </div>
+
       <div id="time" class="time">00:00:00</div>
       <div class="controls">
-        <button id="toggle" tabindex="-1">Start</button>
+        <button id="toggle" data-state="idle" tabindex="-1">Start</button>
         <button id="reset" tabindex="-1">Reset</button>
       </div>
     </div>

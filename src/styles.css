@@ -26,11 +26,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   gap: 6px;
   border-radius: 14px;
   background: rgba(0, 0, 0, var(--bg-alpha));
   color: var(--fg);
+  padding: 6px 8px 12px 8px;
 }
 
 /* Let clicks pass through to .widget so dragging works from anywhere
@@ -65,10 +66,17 @@ body {
   background: rgba(255, 255, 255, 0.28);
 }
 
+.top-bar {
+  align-self: stretch;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
 .close {
-  position: absolute;
-  top: 4px;
-  right: 6px;
+  pointer-events: auto;
+  display: block;
   width: 18px;
   height: 18px;
   line-height: 16px;
@@ -89,4 +97,59 @@ body {
 
 .close:hover {
   background: rgba(255, 70, 70, 0.7);
+}
+
+/* Status dot (top-left, mirrors the close button) */
+.dot {
+  /* position: absolute;
+  top: 7px;
+  left: 7px; */
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  pointer-events: none; /* never blocks dragging */
+}
+
+.dot.running {
+  background: #3ddc84;
+  border-color: #3ddc84;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(61, 220, 132, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot.running {
+    animation: none;
+  }
+}
+
+/* Toggle button tint: green = will start/resume, amber = will pause */
+.controls #toggle[data-state="idle"] {
+  background: rgba(61, 220, 132, 0.3);
+  border-color: rgba(61, 220, 132, 0.7);
+}
+
+.controls #toggle[data-state="idle"]:hover {
+  background: rgba(61, 220, 132, 0.45);
+}
+
+.controls #toggle[data-state="running"] {
+  background: rgba(255, 179, 0, 0.3);
+  border-color: rgba(255, 179, 0, 0.75);
+}
+
+.controls #toggle[data-state="running"]:hover {
+  background: rgba(255, 179, 0, 0.45);
 }
