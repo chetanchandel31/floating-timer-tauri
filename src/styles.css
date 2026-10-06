@@ -37,7 +37,7 @@ body {
 /* Let clicks pass through to .widget so dragging works from anywhere
    except the buttons */
 .time {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: 1px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
