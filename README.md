@@ -2,6 +2,8 @@
 
 A small floating stopwatch widget for the desktop, built with [Tauri v2](https://v2.tauri.app/) (Rust shell, TypeScript + Vite frontend). Runs on Windows and Linux Mint, built separately on each OS.
 
+![screenshot](/assets/widget-screenshot.png)
+
 ## Features
 
 - `HH:MM:SS` stopwatch, counting up from `00:00:00`
