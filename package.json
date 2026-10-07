@@ -10,7 +10,8 @@
     "tauri": "tauri",
     "clean": "cargo clean --manifest-path src-tauri/Cargo.toml",
     "clean:all": "cargo clean --manifest-path src-tauri/Cargo.toml && node -e \"require('fs').rmSync('node_modules',{recursive:true,force:true})\"",
-    "build:win": "tauri build --bundles nsis"
+    "build:win": "tauri build --bundles nsis",
+    "build:linux": "tauri build --bundles deb"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

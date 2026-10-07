@@ -1,4 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { TrayIcon } from "@tauri-apps/api/tray";
+import { Menu, MenuItem } from "@tauri-apps/api/menu";
 
 // querySelector can return null if the element isn't found. The "!" tells
 // TypeScript "trust me, it exists" (it does, we wrote the HTML).
@@ -78,6 +80,104 @@ async function updateBadge(running: boolean): Promise<void> {
   }
 }
 
+// Linux system tray: icon + a disabled status line in its menu
+const isLinux = navigator.userAgent.includes("Linux");
+let trayIcon: TrayIcon | null = null;
+let trayStatus: MenuItem | null = null;
+let trayPngs: { running: Uint8Array; paused: Uint8Array } | null = null;
+let lastTrayRunning: boolean | null = null;
+// Updates run one after another, so a quick click can't create two tray icons
+let trayQueue: Promise<void> = Promise.resolve();
+
+async function canvasToPng(canvas: HTMLCanvasElement): Promise<Uint8Array> {
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+      "image/png",
+    ),
+  );
+  return new Uint8Array(await blob.arrayBuffer());
+}
+
+// "dot":   light stopwatch, green dot while running
+// "green": stopwatch itself turns green while running
+const TRAY_STYLE = "green" as "dot" | "green";
+
+async function makeTrayPng(running: boolean): Promise<Uint8Array> {
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const fg = running && TRAY_STYLE === "green" ? "#3ddc84" : "#e8eaed";
+
+  ctx.strokeStyle = fg;
+  ctx.fillStyle = fg;
+  ctx.lineCap = "round";
+
+  // Stopwatch body
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(32, 36, 22, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Crown and stem
+  ctx.fillRect(24, 2, 16, 7);
+  ctx.fillRect(28, 8, 8, 6);
+
+  // Hand
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(32, 36);
+  ctx.lineTo(43, 24);
+  ctx.stroke();
+
+  if (running && TRAY_STYLE === "dot") {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(47, 47, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#3ddc84";
+    ctx.beginPath();
+    ctx.arc(47, 47, 14, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  return canvasToPng(canvas);
+}
+
+async function applyTray(running: boolean): Promise<void> {
+  try {
+    trayPngs ??= {
+      running: await makeTrayPng(true),
+      paused: await makeTrayPng(false),
+    };
+    const icon = running ? trayPngs.running : trayPngs.paused;
+    const label = running ? "Running" : "Paused";
+    if (!trayIcon) {
+      trayStatus = await MenuItem.new({
+        id: "status",
+        text: label,
+        enabled: false,
+      });
+      const menu = await Menu.new({ items: [trayStatus] });
+      trayIcon = await TrayIcon.new({ icon, menu });
+    } else {
+      await trayIcon.setIcon(icon);
+      await trayStatus!.setText(label);
+    }
+  } catch (e) {
+    console.error("tray failed", e);
+  }
+}
+
+function updateTray(running: boolean): void {
+  if (!isLinux || running === lastTrayRunning) return;
+  lastTrayRunning = running;
+  trayQueue = trayQueue.then(() => applyTray(running));
+}
+
 function render(): void {
   const running = startedAt !== null;
 
@@ -92,6 +192,8 @@ function render(): void {
 
   dotEl.classList.toggle("running", running);
   void updateBadge(running);
+
+  updateTray(running);
 }
 
 function start(): void {
