@@ -82,9 +82,9 @@ Use `npm run tauri dev`, not `npm run dev`. The latter only starts the Vite fron
 
 ## Build
 
-| Command | Output |
-|---|---|
-| `npm run build:win` | NSIS installer, plus the plain `.exe` |
+| Command               | Output                                |
+| --------------------- | ------------------------------------- |
+| `npm run build:win`   | NSIS installer, plus the plain `.exe` |
 | `npm run build:linux` | `.deb` package, plus the plain binary |
 
 These are shortcuts for `tauri build --bundles nsis` and `tauri build --bundles deb`. Use `tauri build --no-bundle` to build only the executable.
@@ -155,9 +155,9 @@ taskkill /f /im explorer.exe; start explorer.exe
 
 Debug builds are large (around 4-5 GB, mostly `src-tauri/target/debug/deps`). It is all rebuilt by the next `npm run tauri dev`, so clean up when the project is idle.
 
-| Command | Removes |
-|---|---|
-| `npm run clean` | `src-tauri/target` (all Rust build output) |
+| Command             | Removes                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `npm run clean`     | `src-tauri/target` (all Rust build output)                                     |
 | `npm run clean:all` | `src-tauri/target` and `node_modules` (run `npm install` before working again) |
 
 Close the app and stop `tauri dev` first. On Windows a running `.exe` is locked and the clean will fail.
@@ -182,8 +182,3 @@ On Linux: `du -h --max-depth=1 | sort -h`
 - **Linux: duplicate tray icons while developing.** Reloading the page can leave old icons. Stop the app (`pkill -f floating-timer-tauri`) and restart. If ghost icons remain, restart Cinnamon with Ctrl+Alt+Esc.
 - **Window opens at the wrong size on Linux.** Check that `src-tauri/tauri.linux.conf.json` exists and still repeats the full window entry.
 - **Windows: installer warning.** SmartScreen flags unsigned installers. On your own machine choose "More info", then "Run anyway".
-
-## Repository notes
-
-- `.gitattributes` forces LF line endings so Windows and Linux checkouts match.
-- Commit `package-lock.json` and `src-tauri/Cargo.lock` so both machines use the same dependency versions. Do not commit `node_modules/` or `src-tauri/target/`.
