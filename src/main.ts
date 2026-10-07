@@ -80,13 +80,16 @@ async function updateBadge(running: boolean): Promise<void> {
 
 function render(): void {
   const running = startedAt !== null;
-  timeEl.textContent = format(elapsedMs());
-  toggleBtn.textContent = running
-    ? "Pause"
-    : accumulatedMs > 0
-      ? "Resume"
-      : "Start";
-  toggleBtn.dataset.state = running ? "running" : "idle";
+
+  const t = format(elapsedMs());
+  if (timeEl.textContent !== t) timeEl.textContent = t;
+
+  const label = running ? "Pause" : accumulatedMs > 0 ? "Resume" : "Start";
+  if (toggleBtn.textContent !== label) toggleBtn.textContent = label;
+
+  const state = running ? "running" : "idle";
+  if (toggleBtn.dataset.state !== state) toggleBtn.dataset.state = state;
+
   dotEl.classList.toggle("running", running);
   void updateBadge(running);
 }

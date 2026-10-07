@@ -136,6 +136,9 @@ body {
 }
 
 /* Toggle button tint: green = will start/resume, amber = will pause */
+.controls #toggle {
+  min-width: 69px;
+}
 .controls #toggle[data-state="idle"] {
   background: rgba(61, 220, 132, 0.3);
   border-color: rgba(61, 220, 132, 0.7);
